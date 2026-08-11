@@ -1,0 +1,58 @@
+# Local stack. `just up` starts only Postgres (dev lane); `just run` adds
+# the app container via `--profile app` (run lane - zero toolchain needed).
+#
+# Security posture: app published on 127.0.0.1 ONLY (never the LAN); runs
+# non-root; secrets live solely in the host .env, mounted at runtime -
+# never in image layers (.dockerignore enforces this at build).
+name: app-shell
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: appshell-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-appshell}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appshell}
+      POSTGRES_DB: ${POSTGRES_DB:-appshell}
+    ports:
+      # Host mapping only (container-internal port stays 5432). Override
+      # with APPSHELL_DB_PORT when another Postgres already owns 5432.
+      - "127.0.0.1:${APPSHELL_DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appshell}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    image: app-shell:${APPSHELL_IMAGE_TAG:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    container_name: appshell-api
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      # Override with APPSHELL_PORT when 8765 is taken.
+      - "127.0.0.1:${APPSHELL_PORT:-8765}:8765"
+    env_file:
+      - path: ../../.env
+        required: false
+    environment:
+      # Survives load_dotenv(override=True): no .env defines this name,
+      # so the .env's POSTGRES_HOST=localhost can't clobber it.
+      APPSHELL_POSTGRES_HOST: postgres
+    volumes:
+      # Read-write so in-app settings can persist keys across restarts.
+      # `just run` guarantees the file exists first (a missing host path
+      # would otherwise become a directory).
+      - ../../.env:/app/.env
+
+volumes:
+  postgres-data:

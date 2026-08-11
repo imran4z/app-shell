@@ -1,0 +1,887 @@
+@import "tailwindcss";
+
+/* --- Theme tokens ----------------------------------------------------
+   Dark-first design system for App Shell's SE Console.
+
+   Anchored on three semantic ideas:
+   - **Canvas / elev1 / elev2** = depth. Cards are slightly raised
+     (elev1) over the canvas; modals/popovers raise further (elev2).
+     Same family of dark blue-greys, only luminance changes.
+   - **Violet accent** (`--color-accent`) = interactive / focused. The
+     mark, primary buttons, focus rings, and the "active phase" state
+     all use this single color so the eye learns where to look.
+   - **Partner brand** (`--color-partner`) = "live in Cloud". Used
+     ONLY for things that materially exist on the SE's tenant,      dashboards pushed, entities emitting, live-tail open. Reserved so
+     it stays meaningful.
+
+   All semantic colors meet WCAG 2.1 AA contrast on `--color-canvas`
+   for both regular text (4.5:1) and UI elements (3:1).
+*/
+
+/* -- Token system, App Shell redesign v2 (Signal direction) --
+   Source: claude_design_assets/appshell-redesign-v2/tokens.css.
+   Pasted under @theme so Tailwind v4 picks them up as utility classes;
+   light theme overrides happen below via [data-theme="light"]. */
+@theme {
+  /* Canvas surfaces, slate-navy, cooler than near-black */
+  --color-canvas:        #0a0e14;
+  --color-canvas-elev1:  #131820;
+  --color-canvas-elev2:  #1c232d;
+  --color-canvas-elev3:  #252e3a;
+
+  /* Borders */
+  --color-border:        rgba(180, 200, 230, 0.08);
+  --color-border-strong: rgba(180, 200, 230, 0.16);
+
+  /* Text */
+  --color-text:          #eef1f6;
+  --color-text-muted:    #9aa3b2;
+  --color-text-faint:    #6b7385;
+
+  /* Accent (teal, Signal direction). Primary actions, focus rings,
+     active states, the brand mark. */
+  --color-accent:        #2dd4bf;
+  --color-accent-hover:  #5eead4;
+  --color-accent-deep:   #14b8a6;
+  --color-accent-bg:     rgba(45, 212, 191, 0.13);
+  --color-accent-border: rgba(45, 212, 191, 0.42);
+  --color-on-accent:     #04211e;
+
+  /* "Live", telemetry-flowing state, distinct from success.
+     Demo emitter pulse / "events flowing" cue. */
+  --color-live:          #6ee7b7;
+  --color-live-bg:       rgba(110, 231, 183, 0.12);
+
+  /* Signal, sky-300 secondary tier (sparkline trails, secondary callouts). */
+  --color-signal:        #7dd3fc;
+  --color-signal-bg:     rgba(125, 211, 252, 0.12);
+
+  /* Partner brand (swap hex for your integration). Reserved for "live in the external system" cues. Never on idle UI. */
+  --color-partner:       #FF8833;
+  --color-partner-bg:    rgba(255, 136, 51, 0.14);
+  --color-partner-border: rgba(255, 136, 51, 0.42);
+
+  /* Semantic */
+  --color-success:       #34d399;
+  --color-success-bg:    rgba(52, 211, 153, 0.13);
+  --color-warning:       #fbbf24;
+  --color-warning-bg:    rgba(251, 191, 36, 0.13);
+  --color-danger:        #f87171;
+  --color-danger-bg:     rgba(248, 113, 113, 0.13);
+  --color-info:          #60a5fa;
+  --color-info-bg:       rgba(96, 165, 250, 0.13);
+
+  /* Layout primitives, tighter than v1 (10px -> 14px -> 6px not 14/20/8) */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 16px;
+
+  /* Shadows, darker on dark theme so layered cards read clearly */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 18px -6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+
+  /* Motion */
+  --motion-fast:   140ms;
+  --motion-normal: 240ms;
+  --motion-slow:   360ms;
+  --ease:          cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Buttery-smooth defaults - every Tailwind `transition-*` utility picks
+     these up, so the whole app eases on the brand curve at a calm tempo
+     unless a component overrides the duration explicitly. */
+  --default-transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  --default-transition-duration: 180ms;
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+}
+
+/* -- Light theme overrides --
+   Applied via `[data-theme="light"]` on <html>. ThemeProvider sets the
+   attribute synchronously before React paints (see index.html boot
+   script) so dark↔light never flashes. */
+[data-theme="light"] {
+  --color-canvas:        #f7f8fa;
+  --color-canvas-elev1:  #ffffff;
+  --color-canvas-elev2:  #f0f2f6;
+  --color-canvas-elev3:  #e6e9ef;
+
+  --color-border:        rgba(20, 30, 50, 0.08);
+  --color-border-strong: rgba(20, 30, 50, 0.14);
+
+  --color-text:          #0f1623;
+  --color-text-muted:    #5a6478;
+  --color-text-faint:    #8a93a3;
+
+  /* Deeper teal so accent stays AA on white surfaces. */
+  --color-accent:        #0d9488;
+  --color-accent-hover:  #14b8a6;
+  --color-accent-deep:   #0f766e;
+  --color-accent-bg:     rgba(13, 148, 136, 0.10);
+  --color-accent-border: rgba(13, 148, 136, 0.30);
+  --color-on-accent:     #ffffff;
+
+  /* Live / Signal, darker for AA on light canvas. */
+  --color-live:          #047857;
+  --color-live-bg:       rgba(4, 120, 87, 0.10);
+  --color-signal:        #075985;
+  --color-signal-bg:     rgba(7, 89, 133, 0.10);
+
+  --color-partner:       #cf6b1a;
+  --color-partner-bg:    rgba(207, 107, 26, 0.10);
+
+  --color-success:       #047857;
+  --color-success-bg:    rgba(4, 120, 87, 0.10);
+  --color-warning:       #b45309;
+  --color-warning-bg:    rgba(180, 83, 9, 0.10);
+  --color-danger:        #b91c1c;
+  --color-danger-bg:     rgba(185, 28, 28, 0.09);
+  --color-info:          #1d4ed8;
+  --color-info-bg:       rgba(29, 78, 216, 0.09);
+
+  /* Lighter shadows so cards lift cleanly on white. */
+  --shadow-sm: 0 1px 2px rgba(15, 22, 35, 0.06);
+  --shadow-md: 0 6px 18px -8px rgba(15, 22, 35, 0.18);
+  --shadow-lg: 0 24px 60px -24px rgba(15, 22, 35, 0.28);
+}
+
+:root {
+  color-scheme: dark;
+  font-family: var(--font-sans);
+}
+/* Smooth in-page scrolling (anchor jumps, scrollIntoView). Neutralised
+   under prefers-reduced-motion by the global rule further down. */
+html { scroll-behavior: smooth; }
+[data-theme="light"] {
+  color-scheme: light;
+}
+:root {
+  /* Inter character variants, improves legibility at small sizes
+     (cv02 enables single-storey 'a', cv11 enables a clearer 1/I distinction).
+     Critical for code-adjacent tabular data which App Shell shows a lot of. */
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss03";
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Tighter line-height for UI density without losing readability.
+     Body content overrides this back to 1.6 in `.prose` etc. */
+  line-height: 1.5;
+}
+
+/* Block headings get tighter line-height + slightly tighter tracking
+   for a more modern, less "documentation" feel. */
+h1, h2, h3 {
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+h1 { font-weight: 600; }
+h2 { font-weight: 600; }
+h3 { font-weight: 500; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+/* Subtle background ambience, radial wash from upper-left, fades out.
+   Matches the Signal direction "halo": teal from the upper-right + sky
+   from the lower-left. Gives the canvas implied depth without
+   distracting from cards on top. */
+body {
+  background:
+    radial-gradient(900px 600px at 80% -10%, rgba(45, 212, 191, 0.10), transparent 60%),
+    radial-gradient(900px 600px at 10% 100%, rgba(125, 211, 252, 0.08), transparent 60%),
+    var(--color-canvas);
+  background-attachment: fixed;
+  text-rendering: optimizeLegibility;
+}
+[data-theme="light"] body {
+  background:
+    radial-gradient(900px 600px at 80% -10%, rgba(15, 118, 110, 0.10), transparent 60%),
+    radial-gradient(900px 600px at 10% 100%, rgba(7, 89, 133, 0.07), transparent 60%),
+    var(--color-canvas);
+  background-attachment: fixed;
+}
+
+/* Glass card primitive, reduce blur on mobile for perf */
+.glass {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+@media (max-width: 768px) {
+  .glass { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+}
+
+/* Code block / inline code, readable, not alarming.
+   `code` is for inline snippets in prose; `pre code` is for blocks
+   (the CodeBlock component drives that). */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-canvas-elev2);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  border: 0;
+  font-size: 0.8125rem;  /* 13px, comfortable for dense logs */
+  line-height: 1.55;
+}
+
+/* Custom scrollbar, slim, themed. Thicker hover state for
+   discoverability (some users don't realize it's draggable). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* Smooth focus ring for keyboard nav. Only show on `:focus-visible`
+   so mouse clicks don't get the ring (modern UX convention). */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduce motion when the user has it set system-wide. Critical a11y. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Selection color matches the accent for brand cohesion. */
+::selection {
+  background: var(--color-accent-bg);
+  color: var(--color-text);
+}
+
+/* UserMenu avatar, gradient surface. Defined here (not as a Tailwind
+   class on the component) so the brand gradient is centralised and any
+   future surface that wants the "identity" look can just opt in via
+   `.user-menu-avatar`. Falls back to the solid `--color-accent-bg`
+   Tailwind utility on the element if this rule is purged. */
+.user-menu-avatar {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-info));
+}
+[data-theme="light"] .user-menu-avatar {
+  /* Slightly lighter mix on white canvas, the dark-theme accent
+     pair is too saturated on a near-white background. */
+  background: linear-gradient(135deg, var(--color-accent), var(--color-signal));
+  color: #ffffff;
+}
+
+/* Topbar brand mark, wraps the Logo in an accent-tinted tile so the
+   mark + wordmark read as one unit. Color cascades through Logo's
+   `currentColor` so the SVG glyph tracks the active theme accent. */
+.brand-tile {
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  border: 1px solid var(--color-accent-border);
+}
+
+/* Live-demo pulsing green dot. Matches the v1 design canvas's
+   `.live-dot` (green = "telemetry actually flowing"), distinct from
+   the teal accent dot the ActiveSessionStrip uses for "build phase
+   running". */
+.live-dot {
+  background: var(--color-live);
+  box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.18);
+  animation: appshell-live-pulse 1.8s ease-in-out infinite;
+}
+@keyframes appshell-live-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(110, 231, 183, 0.18); }
+  50%      { box-shadow: 0 0 0 8px rgba(110, 231, 183, 0.04); }
+}
+[data-theme="light"] .live-dot {
+  /* Light theme uses a deeper green (#047857) for AA contrast. */
+  box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.22);
+  animation-name: appshell-live-pulse-light;
+}
+@keyframes appshell-live-pulse-light {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(4, 120, 87, 0.22); }
+  50%      { box-shadow: 0 0 0 8px rgba(4, 120, 87, 0.04); }
+}
+
+/* Dashboard H1, `.h1-display` is the gradient-text span ("live demo")
+   inside the otherwise-plain title. Tracks the active theme accents. */
+.h1-display {
+  background: linear-gradient(120deg, var(--color-accent), var(--color-signal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Recent-builds row-flag, 3px colored bar on the left edge of a row
+   indicating its state (live / warn / muted). Matches v1 design canvas
+   `.row-flag` semantics. Rendered as a pseudo-element via the class on
+   the FIRST <td> so it lines up flush with the row's top/bottom edges. */
+.row-flag {
+  display: inline-block;
+  width: 3px;
+  height: 18px;
+  border-radius: 2px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: transparent;
+}
+.row-flag.live  { background: var(--color-live); }
+.row-flag.warn  { background: var(--color-warning); }
+.row-flag.muted { background: var(--color-border-strong); }
+.row-flag.danger { background: var(--color-danger); }
+
+/* ActiveSessionStrip pulse, 8px teal dot with a halo ring that expands
+   from 6px -> 10px and fades out, every 1.8s. Used on the Dashboard hero
+   strip when a build is live; matches the design-spec keyframe from
+   `appshell-redesign-v2/dashboard.md`. Skip the keyframe entirely under
+   prefers-reduced-motion (the @media block at the top of this file
+   already neutralizes all animations, so this just shows a static dot). */
+.active-session-dot {
+  box-shadow: 0 0 0 6px rgba(45, 212, 191, 0.18);
+  animation: appshell-pulse 1.8s ease-in-out infinite;
+}
+[data-theme="light"] .active-session-dot {
+  /* Light-theme accent is deeper teal (#0d9488); recolor the halo so
+     it stays AA-visible against the warm light canvas. */
+  box-shadow: 0 0 0 6px rgba(13, 148, 136, 0.22);
+}
+@keyframes appshell-pulse {
+  50% { box-shadow: 0 0 0 10px rgba(45, 212, 191, 0); }
+}
+[data-theme="light"] .active-session-dot {
+  animation-name: appshell-pulse-light;
+}
+@keyframes appshell-pulse-light {
+  50% { box-shadow: 0 0 0 10px rgba(13, 148, 136, 0); }
+}
+
+/* --- Setup wizard (v1 design canvas) ------------------------------
+   Centered max-880 card containing a step rail at top + 2-col body.
+   Matches the v1 mockup's "Let's get you set up." layout. */
+.setup-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: start center;
+  padding: 48px 24px 64px;
+}
+.setup-card {
+  width: 100%;
+  max-width: 880px;
+  background: var(--color-canvas-elev1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+/* Settings-mode card uses the full Layout width, no centered 880px
+   constraint, so the right column (Bulk import + Save & launch)
+   gets real breathing room instead of stacking tightly in 300px. */
+.setup-card[data-mode="settings"] {
+  max-width: none;
+}
+.setup-rail {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-canvas);
+}
+.setup-rail-item {
+  flex: 1;
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-right: 1px solid var(--color-border);
+  border-top: 0; border-bottom: 0; border-left: 0;
+  position: relative;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease);
+}
+.setup-rail-item:hover {
+  background: color-mix(in srgb, var(--color-canvas-elev1) 60%, transparent);
+}
+.setup-rail-item:last-child { border-right: 0; }
+.setup-rail-item .n {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-strong);
+  display: grid; place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-faint);
+  flex-shrink: 0;
+}
+.setup-rail-item.done .n {
+  background: var(--color-success);
+  color: var(--color-canvas);
+  border-color: var(--color-success);
+}
+.setup-rail-item.active .n {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: var(--color-accent);
+}
+.setup-rail-item.active { background: var(--color-canvas-elev1); }
+.setup-rail-item.locked {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.setup-rail-item.locked:hover {
+  background: transparent;
+}
+.setup-rail-item.locked .n {
+  background: transparent;
+  color: var(--color-text-faint);
+  border-color: var(--color-border);
+}
+.setup-rail-item .lbl-grp {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.setup-rail-item .lbl {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+.setup-rail-item .sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* Setup form fields, v1 .field treatment with uppercase mono labels,
+   42px inputs, accent focus ring. */
+.setup-field { margin-bottom: 18px; }
+.setup-field-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.setup-field-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: 0;
+  transition: border-color var(--motion-fast) var(--ease),
+              box-shadow var(--motion-fast) var(--ease);
+}
+.setup-field-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-bg);
+}
+.setup-field-valid {
+  color: var(--color-live);
+  font-size: 11px;
+  margin-top: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.setup-field-invalid {
+  color: var(--color-danger);
+  font-size: 11px;
+  margin-top: 6px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.setup-field-hint {
+  color: var(--color-text-faint);
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+/* Setup aside, right column with .env upload zone */
+.setup-aside {
+  background: var(--color-canvas-elev2);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.setup-dropzone {
+  border: 1.5px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  background: var(--color-canvas);
+  transition: border-color var(--motion-fast) var(--ease),
+              background var(--motion-fast) var(--ease);
+}
+.setup-dropzone:hover,
+.setup-dropzone.dragging {
+  border-color: var(--color-accent);
+  background: var(--color-accent-bg);
+}
+.setup-dropzone .big {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+.setup-dropzone .small {
+  font-size: 11px;
+  color: var(--color-text-faint);
+  margin-top: 4px;
+}
+
+/* Setup mark, small gradient tile next to the "App Shell" wordmark
+   above the wizard's H1. Matches the v1 mockup's centered header. */
+.setup-mark {
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-signal));
+  color: var(--color-on-accent);
+}
+
+/* --- Pipeline journey (CDD pipeline run mockup) ------------------
+   The horizontal "six phases as columns" layout for the live build
+   view at /pipelines/:id (renders inside NewDemo.tsx). Designed to
+   replace the dense PhaseRow + side-log split with a single card. */
+.journey {
+  margin-top: 16px;
+  background: var(--color-canvas-elev1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.journey-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.journey-target {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text);
+}
+.journey-meta {
+  display: flex; gap: 18px;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+.journey-meta > div { display: flex; align-items: baseline; gap: 6px; }
+.journey-meta b { color: var(--color-text); font-weight: 500; }
+
+.journey-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+}
+.journey-step {
+  padding: 18px 16px 14px;
+  border-right: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background var(--motion-fast) ease;
+  text-align: left;
+  background: transparent;
+  border-top: 0; border-bottom: 0; border-left: 0;
+  color: inherit;
+  font: inherit;
+}
+.journey-step:last-child { border-right: 0; }
+.journey-step:hover { background: var(--color-canvas-elev2); }
+.journey-step.is-active {
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-canvas-elev1));
+}
+.journey-step.is-active::before {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2px; background: var(--color-accent);
+}
+.journey-step-head {
+  display: flex; align-items: center; gap: 10px;
+}
+.journey-step-no {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-faint);
+  letter-spacing: 0.06em;
+}
+.journey-step-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: grid; place-items: center;
+  background: var(--color-canvas-elev2);
+  color: var(--color-text-faint);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+.journey-step.done    .journey-step-icon {
+  background: var(--color-live-bg);
+  color: var(--color-live);
+  border-color: color-mix(in srgb, var(--color-live) 30%, transparent);
+}
+.journey-step.running .journey-step-icon {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  border-color: var(--color-accent-border);
+}
+.journey-step.failed  .journey-step-icon {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+.journey-step.skipped .journey-step-icon { opacity: .45; }
+.journey-step-name {
+  font-size: 13px; font-weight: 500;
+  color: var(--color-text); margin: 0;
+}
+.journey-step-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-faint);
+  display: flex; gap: 10px;
+}
+.journey-step-bar {
+  height: 3px; border-radius: 3px;
+  background: var(--color-canvas-elev2);
+  overflow: hidden;
+}
+.journey-step-bar > i {
+  display: block; height: 100%; background: var(--color-accent);
+}
+.journey-step.done    .journey-step-bar > i { background: var(--color-live);    width: 100%; }
+.journey-step.running .journey-step-bar > i { background: var(--color-accent);  width: 62%; animation: journey-shimmer 1.6s ease-in-out infinite; }
+.journey-step.failed  .journey-step-bar > i { background: var(--color-danger);  width: 100%; }
+.journey-step.pending .journey-step-bar > i { width: 0; }
+@keyframes journey-shimmer {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+
+.journey-detail {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  border-top: 1px solid var(--color-border);
+  min-height: 280px;
+}
+@media (max-width: 1000px) {
+  .journey-detail { grid-template-columns: 1fr; }
+  .journey-side { border-right: 0; border-bottom: 1px solid var(--color-border); }
+}
+.journey-side {
+  padding: 20px;
+  border-right: 1px solid var(--color-border);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.journey-side h3 { font-size: 13px; font-weight: 500; margin: 0; }
+.journey-side .desc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+.journey-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.journey-stats div {
+  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.journey-stats .v {
+  font-size: 18px; font-weight: 500;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.journey-stats .l {
+  font-size: 10px;
+  color: var(--color-text-faint);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.journey-log {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--color-canvas);
+  color: var(--color-text-muted);
+  padding: 16px 20px;
+  line-height: 1.65;
+  overflow: auto;
+  max-height: 480px;
+  position: relative;
+}
+.journey-log .ts  { color: var(--color-text-faint); margin-right: 10px; }
+.journey-log .lvl-info { color: var(--color-info);    margin-right: 6px; }
+.journey-log .lvl-ok   { color: var(--color-live);    margin-right: 6px; }
+.journey-log .lvl-warn { color: var(--color-warning); margin-right: 6px; }
+.journey-log .lvl-err  { color: var(--color-danger);  margin-right: 6px; }
+.journey-log .line { white-space: pre-wrap; word-break: break-word; }
+
+/* Jump-to-error pulse: the "N err" chip scrolls the first error row into view
+   and tags it .log-flash for ~1.6s so the eye lands right on it, then settles
+   back to the normal error tint. */
+@keyframes logFlash {
+  0%   { background-color: color-mix(in srgb, var(--color-danger) 35%, transparent); }
+  100% { background-color: var(--color-danger-bg); }
+}
+.log-flash {
+  animation: logFlash 1.6s ease-out;
+  outline: 1px solid var(--color-danger);
+  outline-offset: -1px;
+}
+
+/* --- App Shell icon animations (appshell-icons v2 handoff) --
+   state-running spins its arc; live-in-cloud flows its telemetry dashes.
+   Both no-op under prefers-reduced-motion. */
+@keyframes appshell-spin { to { transform: rotate(360deg); } }
+.appshell-spin { transform-box: fill-box; transform-origin: center; animation: appshell-spin 1.1s linear infinite; }
+@keyframes appshell-flow { 0% { stroke-dashoffset: 7; } 100% { stroke-dashoffset: 0; } }
+.appshell-flow { stroke-dasharray: 2.6 3; animation: appshell-flow 1s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .appshell-spin, .appshell-flow { animation: none; }
+}
+
+/* --- Knowledge-graph diagram: fluid motion ------------------------
+   Living-but-readable: nodes ease in, a faint current flows along the
+   hierarchy edges, and zoom/pan glides instead of snapping. All
+   neutralised under prefers-reduced-motion below. */
+@keyframes kg-node-in {
+  from { opacity: 0; transform: translateY(7px) scale(0.965); }
+  to   { opacity: 1; transform: none; }
+}
+.kg-node-in {
+  transform-box: fill-box;          /* scale/translate about the node's own box */
+  transform-origin: center;
+  animation: kg-node-in 0.42s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+}
+/* A slow dash drift along an edge - overlaid on the solid link as a
+   subtle "current", direction = parent -> child. */
+@keyframes kg-edge-flow { to { stroke-dashoffset: -20; } }
+.kg-edge-flow { animation: kg-edge-flow 2.4s linear infinite; }
+/* Eased zoom/pan glide. Removed mid-drag (panning) so dragging tracks
+   the cursor 1:1 without lag. */
+.kg-zoom-eased { transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .kg-node-in { animation: none; opacity: 1; }
+  .kg-edge-flow { animation: none; }
+  .kg-zoom-eased { transition: none; }
+}
+
+/* Smooth "watery" accent wash for interactive rows / chips / tiles.
+   One shared hover language across the app: a faint accent tint fades
+   in on hover (and focus-visible) with the standard easing. Pair with
+   `cursor-pointer` on the element. */
+.hover-wash {
+  transition: background-color var(--motion-fast) var(--ease),
+              border-color var(--motion-fast) var(--ease),
+              color var(--motion-fast) var(--ease);
+}
+.hover-wash:hover,
+.hover-wash:focus-visible {
+  background-color: color-mix(in srgb, var(--color-accent) 9%, transparent);
+}
+
+/* --- Assistant: AI-task motion language ---------------------------
+   Flashy-but-tasteful cues that the agent is working. All neutralised
+   under prefers-reduced-motion by the global rule above. */
+
+/* Indeterminate gradient sweep - a thin progress bar under the assistant
+   header while a turn streams. */
+@keyframes appshell-sweep {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.appshell-sweep {
+  background-image: linear-gradient(90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 80%, transparent) 35%,
+    var(--color-signal) 50%,
+    color-mix(in srgb, var(--color-accent) 80%, transparent) 65%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: appshell-sweep 1.3s linear infinite;
+}
+
+/* Three-dot "thinking" pulse. Stagger via inline animation-delay. */
+@keyframes appshell-thinking {
+  0%, 80%, 100% { opacity: .25; transform: translateY(0); }
+  40%           { opacity: 1;   transform: translateY(-3px); }
+}
+.appshell-thinking-dot {
+  animation: appshell-thinking 1.2s ease-in-out infinite;
+}
+
+/* Soft breathing glow for the assistant's AI orb while it works. */
+@keyframes appshell-orb {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent); }
+  50%      { box-shadow: 0 0 14px 3px color-mix(in srgb, var(--color-accent) 40%, transparent); }
+}
+.appshell-orb-live { animation: appshell-orb 1.8s ease-in-out infinite; }
+
+/* Animated brand-gradient text (assistant title, hero accents). */
+@keyframes appshell-gradient-pan { to { background-position: 200% center; } }
+.appshell-gradient-text {
+  background: linear-gradient(110deg, var(--color-accent), var(--color-signal), var(--color-accent));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: appshell-gradient-pan 5s linear infinite;
+}
+
+/* Utility for screen-reader-only content. Used by ARIA labels we want
+   to expose to assistive tech but keep visually invisible. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
