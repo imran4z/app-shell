@@ -12,6 +12,11 @@ human approval gate is built in. One Docker container, one port. There
 is intentionally no monitoring stack. The reasoning behind all of this
 lives in [BLUEPRINT.md](BLUEPRINT.md).
 
+![Users page](docs/screenshots/users.png)
+
+More screenshots and the full architecture diagrams (Mermaid, rendered
+right on GitHub) live in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## The workflow
 
 ```
@@ -79,7 +84,8 @@ ui/
   src/components/         primitives + Layout/TopBar/⌘K palette
   src/pages/              Dashboard (hero), Items (list), Profiles (list->detail)
 deploy/docker/            3-stage Dockerfile + compose (postgres / --profile app)
-justfile                  the dev-loop source of truth
+docs/ARCHITECTURE.md      Mermaid architecture diagrams + screenshots
+justfile                  the dev-loop source of truth (incl. `just screenshots`)
 ```
 
 The **Items** resource is a deliberate example thread - migration ->

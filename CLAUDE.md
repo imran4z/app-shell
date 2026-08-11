@@ -69,6 +69,13 @@ stack (no OTel) - do not add one unless the spec asks.
    calls for them - follow §5/§8 and the contracts in §12.
 7. **Gates**: `just check` green, then `just run` and verify the app works
    in Docker Desktop end to end.
+8. **Architecture doc (required)**: regenerate `docs/ARCHITECTURE.md` for
+   the new domain. Keep the three-diagram structure (system overview,
+   request paths, storage contract) and the Mermaid format; swap the
+   example entities, routes, and assistant tools for the app's real ones.
+   Then run `just screenshots` against the seeded, running app so the
+   screenshots match the new UI. An app without a current architecture
+   doc is not done.
 
 ## House rules (the ones people break)
 

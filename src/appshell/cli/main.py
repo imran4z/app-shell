@@ -99,14 +99,34 @@ def items_seed(count: int) -> None:
     from appshell.schemas import Item, ItemState
     from appshell.storage import ItemRepository, session_scope
 
+    titles = [
+        "Feed the office capybara",
+        "Untangle the llama drama",
+        "Polish the disco ball",
+        "Recalibrate the snack radar",
+        "Teach the roomba to moonwalk",
+        "Audit the rubber duck inventory",
+        "Water the plastic plants (again)",
+        "Rename all the things",
+        "Debug the coffee machine",
+        "Alphabetize the sticker drawer",
+        "Test the emergency confetti cannon",
+        "Interview the office goldfish",
+        "Refactor the paper airplane fleet",
+        "Ship the good-vibes pipeline",
+        "Count the invisible sheep",
+        "Upgrade the moral support hamster",
+    ]
+    random.shuffle(titles)
     repo = ItemRepository()
     states = list(ItemState)
     with session_scope() as session:
         for i in range(count):
+            title = titles[i] if i < len(titles) else f"Mystery task {i + 1:02d}"
             repo.upsert(
                 session,
                 Item(
-                    title=f"Demo item {i + 1:02d}",
+                    title=title,
                     state=random.choice(states),
                     detail={"seed": True, "index": i},
                 ),
@@ -145,16 +165,30 @@ def profiles_seed(count: int) -> None:
     from appshell.schemas import Profile, ProfileStatus
     from appshell.storage import ProfileRepository, session_scope
 
-    verticals = ["retail", "fintech", "gaming", "logistics", "media", "health"]
+    companies = [
+        ("Capybara Cafe Co", "hospitality", "Serves suspiciously calm espresso."),
+        ("Otter Logistics", "logistics", "Ships anything, holds hands during transit."),
+        ("Quokka Games", "gaming", "Every loading screen smiles back."),
+        ("Narwhal Media", "media", "The unicorn of the sea, now streaming."),
+        ("Axolotl Health", "health", "Regenerates your patience, not just limbs."),
+        ("Pangolin Fintech", "fintech", "Rolls into a ball when the market dips."),
+        ("Wombat Warehousing", "logistics", "Cube-shaped storage, naturally."),
+        ("Puffin Analytics", "media", "Small bird, big dashboards."),
+        ("Gecko Grid Energy", "energy", "Sticks to the wall so your power does not."),
+        ("Manatee Marine Tours", "hospitality", "Slow travel, taken literally."),
+    ]
+    random.shuffle(companies)
     repo = ProfileRepository()
     with session_scope() as session:
         for i in range(count):
-            vertical = random.choice(verticals)
+            name, vertical, blurb = companies[i % len(companies)]
+            if i >= len(companies):
+                name = f"{name} {i + 1}"
             repo.upsert(
                 session,
                 Profile(
-                    name=f"Acme {vertical.title()} {i + 1:02d}",
-                    summary=f"Demo profile for a {vertical} prospect.",
+                    name=name,
+                    summary=blurb,
                     status=random.choice(list(ProfileStatus)),
                     tags=[vertical, "demo"],
                     attributes={
@@ -184,28 +218,28 @@ def users_seed(count: int) -> None:
     from appshell.storage import UserRepository, session_scope
 
     first = [
-        "Ada",
-        "Grace",
-        "Alan",
-        "Edsger",
-        "Barbara",
-        "Donald",
-        "Radia",
-        "Vint",
-        "Katherine",
-        "Linus",
+        "Waffles",
+        "Biscuit",
+        "Noodle",
+        "Pickle",
+        "Mochi",
+        "Taco",
+        "Ziggy",
+        "Pretzel",
+        "Churro",
+        "Nugget",
     ]
     last = [
-        "Lovelace",
-        "Hopper",
-        "Turing",
-        "Dijkstra",
-        "Liskov",
-        "Knuth",
-        "Perlman",
-        "Cerf",
-        "Johnson",
-        "T.",
+        "McOtter",
+        "Wombatson",
+        "Capybara",
+        "Quokka",
+        "Platypus",
+        "Axolotl",
+        "Pangolin",
+        "Mongoose",
+        "Narwhal",
+        "Pufferfish",
     ]
     repo = UserRepository()
     with session_scope() as session:

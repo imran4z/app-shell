@@ -100,3 +100,8 @@ ui-build:
 # Environment sanity check.
 doctor:
     uv run appshell doctor
+
+# Capture docs/screenshots from the running app (needs Chrome + the app
+# up on APPSHELL_PORT, default 8765). Agents: rerun after UI changes.
+screenshots:
+    ./scripts/screenshots.sh

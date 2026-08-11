@@ -76,6 +76,8 @@ DEFINITION OF DONE
      appointments, some overdue tasks).
    - `just run` boots it in Docker Desktop; walk the whole flow once and
      fix what you find before declaring done.
+   - docs/ARCHITECTURE.md regenerated for this domain (CLAUDE.md step 8)
+     and `just screenshots` rerun against the seeded app.
 ```
 
 ## Example 2 - E-commerce customer portal
@@ -137,6 +139,8 @@ DEFINITION OF DONE
      states, a handful of returns in each state).
    - `just run` works in Docker Desktop; process one return end-to-end
      through the assistant with the approval gate before declaring done.
+   - docs/ARCHITECTURE.md regenerated for this domain (CLAUDE.md step 8)
+     and `just screenshots` rerun against the seeded app.
 ```
 
 ## Writing your own prompt
@@ -156,7 +160,8 @@ Keep the skeleton, change the middle:
    ones explicitly. The gate is already built; the agent only writes the
    tool defs and executors.
 4. **Definition of done** - always demand: `just check` green, example
-   domain deleted, a believable `just seed`, and a `just run` walkthrough
-   in Docker Desktop. Agents cut these corners unless told not to.
+   domain deleted, a believable `just seed`, a `just run` walkthrough in
+   Docker Desktop, and a regenerated docs/ARCHITECTURE.md with fresh
+   `just screenshots`. Agents cut these corners unless told not to.
 ```
 
