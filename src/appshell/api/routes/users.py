@@ -47,6 +47,17 @@ class UserStatsResponse(BaseModel):
     total: int
 
 
+class MeResponse(BaseModel):
+    """Identity for the top-bar user menu. The template has no auth, so
+    "me" is resolved from the directory: APPSHELL_ME_EMAIL if set, else
+    the first active admin, else the newest user, else null. Replace this
+    with your real session lookup when you wire auth."""
+
+    user: AppUser | None
+    model: str
+    version: str
+
+
 def _get_or_404(user_id: str) -> AppUser:
     with session_scope() as session:
         user = _repo.get(session, user_id)
@@ -63,6 +74,26 @@ def user_stats() -> UserStatsResponse:
     with session_scope() as session:
         counts = _repo.counts_by_status(session)
     return UserStatsResponse(counts=counts, total=sum(counts.values()))
+
+
+@router.get("/me", response_model=MeResponse)
+def me() -> MeResponse:
+    import os
+
+    from appshell.observability.llm_client import DEFAULT_MODEL
+
+    user: AppUser | None = None
+    with session_scope() as session:
+        wanted = os.environ.get("APPSHELL_ME_EMAIL", "").strip()
+        if wanted:
+            user = _repo.get_by_email(session, wanted)
+        if user is None:
+            admins, _ = _repo.list(session, role=UserRole.ADMIN, status=UserStatus.ACTIVE, limit=1)
+            user = admins[0] if admins else None
+        if user is None:
+            newest, _ = _repo.list(session, limit=1)
+            user = newest[0] if newest else None
+    return MeResponse(user=user, model=DEFAULT_MODEL, version="0.1.0")
 
 
 @router.get("", response_model=UserListResponse)

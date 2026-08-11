@@ -5,14 +5,14 @@
  */
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { Boxes, Contact, LayoutDashboard, Menu, Monitor, Moon, Search, Sparkles, Sun, Users, X } from "lucide-react";
+import { Boxes, Contact, LayoutDashboard, Menu, Search, Sparkles, Users, X } from "lucide-react";
 
 import { AssistantDrawer } from "@/components/Assistant";
 import { CommandPalette } from "@/components/CommandPalette";
+import { UserMenu } from "@/components/UserMenu";
 import { BrandMark } from "@/components/icons/BrandMark";
 import { useAssistant } from "@/lib/AssistantContext";
 import { cn } from "@/lib/cn";
-import { useTheme, type ThemeMode } from "@/lib/ThemeContext";
 
 export const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -27,41 +27,6 @@ function navItemClass(isActive: boolean) {
     isActive
       ? "bg-white/[0.06] text-[var(--color-text)]"
       : "text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-white/[0.03]",
-  );
-}
-
-function ThemeMenu() {
-  const { mode, setMode } = useTheme();
-  const options: { value: ThemeMode; icon: typeof Sun; label: string }[] = [
-    { value: "light", icon: Sun, label: "Light" },
-    { value: "dark", icon: Moon, label: "Dark" },
-    { value: "system", icon: Monitor, label: "System" },
-  ];
-  return (
-    <div
-      className="flex items-center gap-0.5 rounded-md border border-[var(--color-border)] p-0.5"
-      role="radiogroup"
-      aria-label="Theme"
-    >
-      {options.map(({ value, icon: Icon, label }) => (
-        <button
-          key={value}
-          type="button"
-          role="radio"
-          aria-checked={mode === value}
-          aria-label={`${label} theme`}
-          onClick={() => setMode(value)}
-          className={cn(
-            "grid h-6 w-6 place-items-center rounded transition-colors",
-            mode === value
-              ? "bg-[var(--color-accent-bg)] text-[var(--color-accent)]"
-              : "text-[var(--color-text-faint)] hover:text-[var(--color-text)]",
-          )}
-        >
-          <Icon size={13} />
-        </button>
-      ))}
-    </div>
   );
 }
 
@@ -152,7 +117,7 @@ export function Layout() {
                 ⌘J
               </kbd>
             </button>
-            <ThemeMenu />
+            <UserMenu />
           </div>
         </div>
       </header>

@@ -211,3 +211,11 @@ export const setUserStatus = (id: string, status: UserStatus) =>
 
 export const deleteUser = (id: string) =>
   request<void>(`/users/${id}`, { method: "DELETE" });
+
+export interface Me {
+  user: AppUser | null;
+  model: string;
+  version: string;
+}
+
+export const getMe = () => request<Me>("/users/me");

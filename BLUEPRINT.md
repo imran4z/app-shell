@@ -1,6 +1,6 @@
-# The Clarion Blueprint - design profile & architecture skeleton
+# The App Shell Blueprint - design profile & architecture skeleton
 
-**What this is:** the extracted design system, UX conventions, and architecture decisions of Proj Clarion, packaged so a fresh Claude Code agent can build a *completely different app* that looks, feels, and is engineered the same way - without re-deriving or re-litigating any of these decisions.
+**What this is:** the settled design system, UX conventions, and architecture decisions this template implements, packaged so a fresh coding agent can build any app that looks, feels, and is engineered the same way, without re-deriving or re-litigating any of these decisions.
 
 **How to use it:** paste this file (or point at this repo and say "read BLUEPRINT.md") along with a description of the new app's domain. Everything below is domain-agnostic. Where a rule says *firm*, follow it exactly; where it says *default*, deviate only with a stated reason.
 
@@ -45,7 +45,7 @@
 | API | FastAPI + uvicorn + `sse-starlette` | plain sync handlers, **zero `Depends`** - see §6 |
 | DB | Postgres 16 + SQLAlchemy 2.0 Core + `psycopg` v3 | **no ORM models, no Alembic** - raw SQL migrations + repo classes |
 | Validation | Pydantic v2 (`ConfigDict`, `Field(description=...)` on everything) | |
-| LLM | `anthropic` SDK direct - **no LangGraph/LangChain** (Clarion's declared ones are vestigial; don't carry them) | hand-rolled async stage functions over a `TypedDict` state |
+| LLM | `anthropic` SDK direct - **no LangGraph/LangChain** | hand-rolled async stage functions over a `TypedDict` state |
 | Logging | `structlog` with trace/span ids injected into every line | |
 | CLI | `click` + `rich`, registered as `[project.scripts]` | |
 | Obs | OTel SDK + OTLP-HTTP, `gen_ai.*` semconv spans | single instrumented LLM wrapper - see §8 |
@@ -56,7 +56,7 @@
 - **justfile** (`set dotenv-load := true`): grouped by `# === Section ===` banners; two first-class *lanes* - **run lane** (`just run`: Docker, zero toolchain, for non-engineers) and **dev lane** (`just api` + `just ui`, hot reload). Quality gates: `just check = lint + typecheck + test`.
 - **Docker**: 3-stage build - `node:22-alpine` builds the UI -> `uv` image builds the venv (`--frozen --no-dev`, cache mounts, deps layer before source layer) -> `python:3.13-slim` runtime, non-root user, UI dist copied in, `EXPOSE 8765`. Port binding is **`127.0.0.1:8765:8765` - localhost only, never the LAN**. Secrets never enter layers: `.dockerignore` excludes `.env*`; keys arrive via `env_file` + a **read-write bind mount of `.env`** so the in-app Setup page can persist keys.
 - **Compose profiles** gate optional services (`--profile app`, `--profile cloud`) so `just up` starts only Postgres.
-- **Env-var trap (firm):** the app calls `load_dotenv(override=True)`, which clobbers compose-injected vars. Infrastructure wiring must use a distinct env name the `.env` never defines (Clarion: `CLARION_POSTGRES_HOST: postgres` in compose, falling back to `POSTGRES_HOST` locally). Name yours `<APP>_POSTGRES_HOST`.
+- **Env-var trap (firm):** the app calls `load_dotenv(override=True)`, which clobbers compose-injected vars. Infrastructure wiring must use a distinct env name the `.env` never defines (this template: `APPSHELL_POSTGRES_HOST: postgres` in compose, falling back to `POSTGRES_HOST` locally). Name yours `<APP>_POSTGRES_HOST`.
 
 ---
 
@@ -103,7 +103,7 @@ All tokens live in **one `@theme` block** in `ui/src/index.css`. Convention: com
 --color-info:     #60a5fa;  --color-info-bg:    rgba(96, 165, 250, 0.13);
 ```
 
-Clarion also reserves a partner-brand color (`--color-grafana: #FF8833`) used **only** to mean "live in the external system," never as idle decoration. If the new app integrates a branded external system, replicate that rule: brand color = live connection, nothing else.
+The theme also reserves a partner-brand color (`--color-partner: #FF8833`, swap the hex for your integration) used **only** to mean "live in the external system," never as idle decoration. If the app integrates a branded external system, keep that rule: brand color = live connection, nothing else.
 
 ### Light (`[data-theme="light"]` override block)
 
@@ -181,7 +181,7 @@ h1,h2,h3 { letter-spacing: -0.015em; line-height: 1.2; }
 h1,h2 { font-weight: 600; }  h3 { font-weight: 500; }
 ```
 
-To guarantee the fonts, load `https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap` (Clarion itself relies on locally-installed fonts with system fallbacks).
+To guarantee the fonts, load `https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap` (the template relies on locally-installed fonts with system fallbacks).
 
 **The signature typographic move:** micro-labels, eyebrows, table headers, and stat labels are always `font-mono uppercase` at 10-11px with `tracking-[0.06em]`-`[0.08em]` in `text-muted`/`text-faint`. Numbers are always `tabular-nums`. Big values are `text-[28px] font-semibold tracking-[-0.02em]`.
 
@@ -300,7 +300,7 @@ Input: `w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-ca
 - **Loading:** no skeletons. In-card `p-8 text-center text-faint "Loading..."`; inline `Loader2 animate-spin` + present-tense verb ("Researching..."); buttons disable on `isPending`.
 - **Empty states:** centered in a Card - `p-12 text-center`, illustration/icon, `text-sm font-medium` title, `text-xs text-muted mt-1 max-w-sm mx-auto` hint that **names the next action**.
 - **Toasts:** provider + `useToasts()` -> `{push, dismiss}`; container `fixed bottom-4 right-4 z-50 flex flex-col gap-2 sm:max-w-sm`, `aria-live="polite"`; card `rounded-xl border bg-elev2 backdrop-blur shadow-xl`, tone border at /40-50, slide-in via a 10ms mounted flag, `role="alert"` for danger else `status`, default 6s, `0` = sticky.
-- **Errors:** inline `text-xs text-danger` under forms; warning banners `rounded-lg border-[color:var(--color-warning)]/40 bg-warning-bg px-3 py-2.5`; a full-page "API unreachable" screen with a `<details>` disclosure containing the raw error and a copy-pasteable fix command. Never `window.alert()` (Clarion has three legacy ones - don't replicate).
+- **Errors:** inline `text-xs text-danger` under forms; warning banners `rounded-lg border-[color:var(--color-warning)]/40 bg-warning-bg px-3 py-2.5`; a full-page "API unreachable" screen with a `<details>` disclosure containing the raw error and a copy-pasteable fix command. Never `window.alert()`.
 - **Log views:** left-border severity tinting - error `border-l-4 border-l-danger bg-danger-bg`, warn `border-l-2 warning /30`, success `/15`, info transparent, debug `opacity-75`.
 
 ### Typography hierarchy (quick table)
@@ -521,7 +521,7 @@ Shape: `observability/{__init__, otlp, llm_client, tools, evals, policy, hooks, 
 - `tests/{unit,integration,fixtures}`; unit mirrors the src package layout. Default `pytest` runs unit only (`addopts = "-m 'not integration'"`); integration modules declare `pytestmark = pytest.mark.integration`.
 - **Fake LLM client**: hand-rolled `SimpleNamespace` fakes reproducing the SDK surface (`content` blocks, `usage` with cache fields, `stop_reason`, a `messages.stream()` context manager with `text_stream` + `get_final_message()`), with canned JSON keyed per agent phase - so the real wrapper, sanitizers, and pydantic validation all execute; only the network is faked.
 - **Ephemeral Postgres**: one session-scoped `testcontainers` `PostgresContainer("postgres:16-alpine")` (skip if lib missing); a per-test `engine` fixture monkeypatches the two `lru_cache`d factories in `storage/db.py` so all in-package callers transparently hit the container; tests call `apply_migrations()` themselves, exercising the real migration path.
-- **Improvement over Clarion**: have the fixture teardown call `drop_all(engine)` instead of maintaining a second table list in `conftest.py` (Clarion's duplicate list has already drifted once).
+- **Teardown rule**: have the fixture teardown call `drop_all(engine)` instead of maintaining a second table list in `conftest.py` (a duplicated list always drifts eventually).
 
 ---
 

@@ -1,7 +1,7 @@
 [project]
 name = "appshell"
 version = "0.1.0"
-description = "App Shell - clone-and-build app template (Clarion blueprint)"
+description = "App Shell - clone-and-build application template"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

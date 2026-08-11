@@ -1,9 +1,8 @@
 # app-shell
 
-A clonable app shell with the plumbing and design of
-[Proj Clarion](https://github.com/imran4z/proj-clarion), minus the domain.
-Clone it, describe your app in one file, and have a coding agent build the
-real thing on rails that already work.
+A clonable app shell: working plumbing and a settled design system,
+minus any domain. Clone it, describe your app in one file, and have a
+coding agent build the real thing on rails that already work.
 
 The stack: FastAPI, Postgres 16, and SQLAlchemy Core with raw-SQL
 migrations (no ORM, no Alembic). React 19 with Vite and Tailwind v4,

@@ -1,8 +1,8 @@
 # CLAUDE.md - how to build an app from this template
 
-You are working in **app-blueprint**: a clonable app shell implementing the
-Clarion blueprint. The plumbing (FastAPI + Postgres + React/Tailwind v4 +
-Docker + tests) already works end to end. Your job is to replace the
+You are working in **app-shell**: a clonable app template built around
+the settled blueprint in BLUEPRINT.md. The plumbing (FastAPI + Postgres +
+React/Tailwind v4 + Docker + tests) already works end to end. Your job is to replace the
 example domain with the user's real one, described in `APP_SPEC.md`.
 
 ## Read first, in this order
@@ -20,7 +20,7 @@ fill it in (or interview them section by section).
 
 | Blueprint concept | Where it lives in this repo |
 |---|---|
-| Design tokens + all custom utilities | `ui/src/index.css` (verbatim from Clarion - do not fork it) |
+| Design tokens + all custom utilities | `ui/src/index.css` (the blueprint made real - do not fork it) |
 | UI primitives (Button, Card, Badge, Toast, StatKpi, Pagination, PageHeader, SearchInput, ConfirmDialog) | `ui/src/components/` |
 | App shell: TopBar, theme, ⌘K palette, mobile drawer | `ui/src/components/Layout.tsx`, `CommandPalette.tsx`, `ui/src/lib/ThemeContext.tsx` |
 | API client pattern | `ui/src/lib/api.ts` |
